@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color: #2D2721;
+    background-color: #FDFBF7;
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+.font-handwritten {
+  font-family: 'Covered By Your Grace', 'Caveat', cursive;
+}
+
+.font-caveat {
+  font-family: 'Caveat', 'Covered By Your Grace', cursive;
+}
+
+.font-serif-title {
+  font-family: 'Playfair Display', Georgia, serif;
+}
+
+/* Retro film grain effect */
+.film-grain {
+  background-image: radial-gradient(rgba(0,0,0,0.06) 1px, transparent 0);
+  background-size: 24px 24px;
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #F4EFE6;
+}
+::-webkit-scrollbar-thumb {
+  background: #D9CEBE;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #BFAEA0;
+}
+
