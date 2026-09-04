@@ -1,17 +1,21 @@
 import React, { useState } from 'react';
-import { ShoppingBag, Eye, Clock, Check } from 'lucide-react';
+import { ShoppingBag, Eye, Clock, Check, Heart } from 'lucide-react';
 import { Product, ProductColor } from '../types';
 
 interface ProductCardProps {
   product: Product;
   onQuickView: (product: Product) => void;
   onAddToCart: (product: Product, color: ProductColor) => void;
+  isFavorite?: boolean;
+  onToggleFavorite?: (product: Product) => void;
 }
 
 export const ProductCard: React.FC<ProductCardProps> = ({
   product,
   onQuickView,
   onAddToCart,
+  isFavorite = false,
+  onToggleFavorite,
 }) => {
   const [selectedColor, setSelectedColor] = useState<ProductColor>(product.colors[0]);
   const [imgSrc, setImgSrc] = useState<string>(product.primaryImage);
@@ -22,6 +26,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     onAddToCart(product, selectedColor);
     setIsAdded(true);
     setTimeout(() => setIsAdded(false), 1600);
+  };
+
+  const handleHeartClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onToggleFavorite) {
+      onToggleFavorite(product);
+    }
   };
 
   return (
@@ -65,10 +76,26 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           )}
         </div>
 
-        {/* Hours to Craft Badge */}
-        <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-xs px-2 py-0.5 rounded-full text-[11px] font-medium text-stone-700 flex items-center gap-1 shadow-2xs">
-          <Clock className="w-3 h-3 text-amber-700" />
-          <span>{product.craftHours}h craft</span>
+        {/* Top Right: Craft Hours & Favorite Button */}
+        <div className="absolute top-3 right-3 flex items-center gap-1.5 z-10">
+          <div className="bg-white/90 backdrop-blur-xs px-2 py-0.5 rounded-full text-[11px] font-medium text-stone-700 flex items-center gap-1 shadow-2xs">
+            <Clock className="w-3 h-3 text-amber-700" />
+            <span>{product.craftHours}h craft</span>
+          </div>
+
+          <button
+            onClick={handleHeartClick}
+            aria-label={isFavorite ? 'Remove from saved' : 'Save to favorites'}
+            className={`p-1.5 rounded-full backdrop-blur-xs shadow-2xs transition-all cursor-pointer ${
+              isFavorite
+                ? 'bg-rose-50 text-rose-600 ring-1 ring-rose-300'
+                : 'bg-white/90 text-stone-400 hover:text-rose-600 hover:bg-white'
+            }`}
+          >
+            <Heart
+              className={`w-3.5 h-3.5 ${isFavorite ? 'fill-rose-500 text-rose-500' : ''}`}
+            />
+          </button>
         </div>
 
         {/* Quick View overlay button on hover */}

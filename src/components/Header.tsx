@@ -1,7 +1,8 @@
-import React from 'react';
-import { Search, ShoppingBag } from 'lucide-react';
+import React, { useState } from 'react';
+import { Search, ShoppingBag, User as UserIcon, LogOut, Package, Sparkles } from 'lucide-react';
 import { BrandLogo } from './BrandLogo';
 import { ProductCategory } from '../types';
+import { useAuth } from '../context/AuthContext';
 
 interface HeaderProps {
   activeCategory: ProductCategory;
@@ -9,6 +10,8 @@ interface HeaderProps {
   cartCount: number;
   onOpenCart: () => void;
   onOpenSearch: () => void;
+  onOpenOrders: () => void;
+  orderCount?: number;
   isTransparent?: boolean;
 }
 
@@ -18,8 +21,25 @@ export const Header: React.FC<HeaderProps> = ({
   cartCount,
   onOpenCart,
   onOpenSearch,
+  onOpenOrders,
+  orderCount = 0,
   isTransparent = false,
 }) => {
+  const { user, signInWithGoogle, logout } = useAuth();
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [isSigningIn, setIsSigningIn] = useState(false);
+
+  const handleSignIn = async () => {
+    try {
+      setIsSigningIn(true);
+      await signInWithGoogle();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsSigningIn(false);
+    }
+  };
+
   return (
     <header
       id="main-header"
@@ -73,8 +93,8 @@ export const Header: React.FC<HeaderProps> = ({
           <BrandLogo onClick={() => onSelectCategory('all')} />
         </div>
 
-        {/* Right Actions: Search & Shopping Bag */}
-        <div className="flex items-center justify-end gap-4 md:gap-5 flex-1">
+        {/* Right Actions: Search, Auth & Shopping Bag */}
+        <div className="flex items-center justify-end gap-3 sm:gap-4 md:gap-5 flex-1 relative">
           <button
             id="header-search-btn"
             onClick={onOpenSearch}
@@ -84,6 +104,95 @@ export const Header: React.FC<HeaderProps> = ({
             <Search className="w-[18px] h-[18px] md:w-5 md:h-5 stroke-[1.8]" />
           </button>
 
+          {/* User Auth Controls */}
+          {user ? (
+            <div className="relative">
+              <button
+                id="header-user-menu-btn"
+                onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                className="flex items-center gap-1.5 p-1 rounded-full hover:bg-stone-200/40 transition-colors cursor-pointer"
+              >
+                {user.photoURL ? (
+                  <img
+                    src={user.photoURL}
+                    alt={user.displayName || 'User'}
+                    className="w-7 h-7 rounded-full border border-stone-300 object-cover"
+                  />
+                ) : (
+                  <div className="w-7 h-7 rounded-full bg-[#1E1B18] text-white flex items-center justify-center text-xs font-semibold">
+                    {user.displayName ? user.displayName.charAt(0).toUpperCase() : 'U'}
+                  </div>
+                )}
+                {orderCount > 0 && (
+                  <span className="hidden sm:inline-flex items-center justify-center px-1.5 py-0.2 text-[10px] font-bold rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
+                    {orderCount}
+                  </span>
+                )}
+              </button>
+
+              {/* User Dropdown Menu */}
+              {isUserMenuOpen && (
+                <>
+                  <div
+                    className="fixed inset-0 z-40"
+                    onClick={() => setIsUserMenuOpen(false)}
+                  />
+                  <div
+                    id="user-dropdown-menu"
+                    className="absolute right-0 mt-2 w-56 rounded-2xl bg-white shadow-xl border border-stone-200/80 p-2 z-50 animate-in fade-in zoom-in-95 duration-150"
+                  >
+                    <div className="px-3 py-2 border-b border-stone-100">
+                      <p className="text-xs font-bold text-stone-900 truncate">
+                        {user.displayName || 'Artisan Collector'}
+                      </p>
+                      <p className="text-[11px] text-stone-500 truncate">{user.email}</p>
+                    </div>
+
+                    <button
+                      onClick={() => {
+                        setIsUserMenuOpen(false);
+                        onOpenOrders();
+                      }}
+                      className="w-full text-left px-3 py-2 text-xs font-medium text-stone-700 hover:bg-stone-100 rounded-xl flex items-center justify-between transition-colors cursor-pointer"
+                    >
+                      <span className="flex items-center gap-2">
+                        <Package className="w-3.5 h-3.5 text-stone-500" />
+                        <span>My Studio Orders</span>
+                      </span>
+                      {orderCount > 0 && (
+                        <span className="text-[10px] bg-stone-100 px-1.5 py-0.5 rounded-full font-bold text-stone-700">
+                          {orderCount}
+                        </span>
+                      )}
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setIsUserMenuOpen(false);
+                        logout();
+                      }}
+                      className="w-full text-left px-3 py-2 text-xs font-medium text-red-700 hover:bg-red-50 rounded-xl flex items-center gap-2 transition-colors cursor-pointer"
+                    >
+                      <LogOut className="w-3.5 h-3.5 text-red-500" />
+                      <span>Sign Out</span>
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          ) : (
+            <button
+              id="header-login-btn"
+              onClick={handleSignIn}
+              disabled={isSigningIn}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-stone-100 hover:bg-stone-200 text-stone-800 transition-colors border border-stone-200 cursor-pointer disabled:opacity-50"
+            >
+              <UserIcon className="w-3.5 h-3.5 text-stone-600" />
+              <span className="hidden sm:inline">Sign In</span>
+            </button>
+          )}
+
+          {/* Cart Trigger */}
           <button
             id="header-cart-btn"
             onClick={onOpenCart}
@@ -105,3 +214,4 @@ export const Header: React.FC<HeaderProps> = ({
     </header>
   );
 };
+

@@ -1,0 +1,140 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global Safety Net: Default-deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // Validation helpers
+    function isValidUser(data) {
+      return data.userId is string && data.userId.size() <= 128 &&
+             data.email is string && data.email.size() <= 256 &&
+             (!('displayName' in data) || (data.displayName is string && data.displayName.size() <= 128)) &&
+             (!('photoURL' in data) || (data.photoURL is string && data.photoURL.size() <= 512));
+    }
+
+    function isValidOrder(data) {
+      return data.orderId is string && data.orderId.size() <= 128 &&
+             data.userId is string && data.userId.size() <= 128 &&
+             data.customerName is string && data.customerName.size() <= 128 &&
+             data.customerEmail is string && data.customerEmail.size() <= 256 &&
+             data.totalAmount is number && data.totalAmount >= 0 &&
+             data.status in ['pending_crafting', 'in_artisan_production', 'shipped', 'delivered'] &&
+             (!('shippingAddress' in data) || (data.shippingAddress is string && data.shippingAddress.size() <= 256)) &&
+             (!('shippingCity' in data) || (data.shippingCity is string && data.shippingCity.size() <= 128)) &&
+             (!('shippingState' in data) || (data.shippingState is string && data.shippingState.size() <= 64)) &&
+             (!('shippingZip' in data) || (data.shippingZip is string && data.shippingZip.size() <= 32)) &&
+             (!('itemCount' in data) || (data.itemCount is number && data.itemCount >= 0));
+    }
+
+    function isValidFavorite(data) {
+      return data.productId is string && data.productId.size() <= 128 &&
+             data.userId is string && data.userId.size() <= 128 &&
+             data.productName is string && data.productName.size() <= 128 &&
+             data.price is number && data.price >= 0 &&
+             (!('primaryImage' in data) || (data.primaryImage is string && data.primaryImage.size() <= 512));
+    }
+
+    function isValidCommission(data) {
+      return data.commissionId is string && data.commissionId.size() <= 128 &&
+             data.userId is string && data.userId.size() <= 128 &&
+             data.itemType is string && data.itemType.size() <= 128 &&
+             data.yarnType is string && data.yarnType.size() <= 128 &&
+             data.contactEmail is string && data.contactEmail.size() <= 256 &&
+             data.status in ['inquiry_received', 'quote_confirmed', 'yarn_prepped', 'hooking_in_progress', 'completed'] &&
+             (!('palette' in data) || (data.palette is string && data.palette.size() <= 128)) &&
+             (!('notes' in data) || (data.notes is string && data.notes.size() <= 2000)) &&
+             (!('estimatedHours' in data) || (data.estimatedHours is number && data.estimatedHours >= 0)) &&
+             (!('estimatedPrice' in data) || (data.estimatedPrice is number && data.estimatedPrice >= 0));
+    }
+
+    function isValidReview(data) {
+      return data.reviewId is string && data.reviewId.size() <= 128 &&
+             data.authorName is string && data.authorName.size() <= 128 &&
+             data.rating is number && data.rating >= 1 && data.rating <= 5 &&
+             data.comment is string && data.comment.size() <= 1000 &&
+             (!('authorId' in data) || (data.authorId is string && data.authorId.size() <= 128)) &&
+             (!('productId' in data) || (data.productId is string && data.productId.size() <= 128)) &&
+             (!('verified' in data) || (data.verified is string && data.verified.size() <= 16));
+    }
+
+    // --- Users Collection ---
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create: if isOwner(userId) && isValidUser(incoming()) && incoming().userId == userId;
+      allow update: if isOwner(userId) && isValidUser(incoming()) &&
+                       incoming().userId == existing().userId &&
+                       incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'photoURL']);
+      allow delete: if false;
+
+      // User Orders Subcollection
+      match /orders/{orderId} {
+        allow get: if isOwner(userId) && isValidId(orderId);
+        allow list: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidId(orderId) &&
+                         isValidOrder(incoming()) &&
+                         incoming().userId == userId &&
+                         incoming().orderId == orderId;
+        allow update, delete: if false;
+      }
+
+      // User Favorites Subcollection
+      match /favorites/{favoriteId} {
+        allow get: if isOwner(userId) && isValidId(favoriteId);
+        allow list: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidId(favoriteId) &&
+                         isValidFavorite(incoming()) &&
+                         incoming().userId == userId;
+        allow update: if false;
+        allow delete: if isOwner(userId) && isValidId(favoriteId);
+      }
+
+      // User Custom Commissions Subcollection
+      match /commissions/{commissionId} {
+        allow get: if isOwner(userId) && isValidId(commissionId);
+        allow list: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidId(commissionId) &&
+                         isValidCommission(incoming()) &&
+                         incoming().userId == userId &&
+                         incoming().commissionId == commissionId;
+        allow update, delete: if false;
+      }
+    }
+
+    // --- Community Reviews Collection ---
+    match /reviews/{reviewId} {
+      allow get: if isValidId(reviewId);
+      allow list: if true;
+      allow create: if isSignedIn() && isValidId(reviewId) &&
+                       isValidReview(incoming()) &&
+                       incoming().reviewId == reviewId &&
+                       (!('authorId' in incoming()) || incoming().authorId == request.auth.uid);
+      allow update, delete: if false;
+    }
+  }
+}

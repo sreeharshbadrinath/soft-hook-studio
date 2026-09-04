@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
-import { X, CheckCircle2, Package, Sparkles, ArrowLeft } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, CheckCircle2, Package, Sparkles, ArrowLeft, CloudCheck } from 'lucide-react';
 import { CartItem } from '../types';
+import { useAuth } from '../context/AuthContext';
+import { createOrderInFirestore, FirestoreOrder } from '../firebase/services';
 
 interface CheckoutModalProps {
   isOpen: boolean;
@@ -17,7 +19,9 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
   total,
   onCompleteOrder,
 }) => {
+  const { user, signInWithGoogle } = useAuth();
   const [step, setStep] = useState<'form' | 'success'>('form');
+  const [confirmedOrderId, setConfirmedOrderId] = useState<string>('');
   const [formData, setFormData] = useState({
     name: 'Clara Mendez',
     email: 'clara@example.com',
@@ -29,16 +33,54 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
   });
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
 
+  useEffect(() => {
+    if (user) {
+      setFormData((prev) => ({
+        ...prev,
+        name: user.displayName || prev.name,
+        email: user.email || prev.email,
+      }));
+    }
+  }, [user]);
+
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsProcessing(true);
+
+    const generatedId = `SHS-${Math.floor(1000 + Math.random() * 9000)}`;
+    setConfirmedOrderId(generatedId);
+
+    // If user is authenticated, sync order to Firestore
+    if (user) {
+      const orderPayload: FirestoreOrder = {
+        orderId: generatedId,
+        userId: user.uid,
+        customerName: formData.name,
+        customerEmail: formData.email,
+        shippingAddress: formData.address,
+        shippingCity: formData.city,
+        shippingState: formData.state,
+        shippingZip: formData.zip,
+        totalAmount: Number(total.toFixed(2)),
+        itemCount: cartItems.reduce((acc, item) => acc + item.quantity, 0),
+        status: 'pending_crafting',
+        createdAt: new Date().toISOString(),
+      };
+
+      try {
+        await createOrderInFirestore(user.uid, orderPayload);
+      } catch (err) {
+        console.error('Failed to sync order to Firestore:', err);
+      }
+    }
+
     setTimeout(() => {
       setIsProcessing(false);
       setStep('success');
       onCompleteOrder();
-    }, 1200);
+    }, 900);
   };
 
   const handleDone = () => {
@@ -199,12 +241,23 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
             </div>
 
             <span className="text-xs uppercase font-bold tracking-wider text-[#CE4326]">
-              Order Confirmed #SHS-9281
+              Order Confirmed #{confirmedOrderId || 'SHS-9281'}
             </span>
 
             <h3 className="text-2xl font-bold text-stone-900">
               Thank You, {formData.name.split(' ')[0]}!
             </h3>
+
+            {user ? (
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-[11px] font-semibold">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                <span>Synced to your Firebase account ({user.email})</span>
+              </div>
+            ) : (
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 text-amber-800 border border-amber-200 text-[11px] font-semibold">
+                <span>Guest Order Placed • Sign in to track anytime</span>
+              </div>
+            )}
 
             <p className="text-xs text-stone-600 max-w-sm mx-auto leading-relaxed">
               Your hand-crocheted heirloom pieces have been sent to our artisan studio.

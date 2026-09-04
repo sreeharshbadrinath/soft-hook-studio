@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { FramedMockupContainer } from './components/FramedMockupContainer';
 import { Header } from './components/Header';
 import { HeroSection } from './components/HeroSection';
@@ -8,6 +8,7 @@ import { CartDrawer } from './components/CartDrawer';
 import { CheckoutModal } from './components/CheckoutModal';
 import { SearchModal } from './components/SearchModal';
 import { CustomCommissionModal } from './components/CustomCommissionModal';
+import { UserOrdersModal } from './components/UserOrdersModal';
 import { ArtisanStorySection } from './components/ArtisanStorySection';
 import { LookbookSection } from './components/LookbookSection';
 import { ReviewsSection } from './components/ReviewsSection';
@@ -15,8 +16,19 @@ import { Footer } from './components/Footer';
 import { PRODUCTS } from './data/products';
 import { Product, ProductCategory, CartItem, ProductColor } from './types';
 import { Filter, SlidersHorizontal, Scissors, Sparkles } from 'lucide-react';
+import { useAuth } from './context/AuthContext';
+import {
+  subscribeUserOrders,
+  subscribeUserFavorites,
+  subscribeUserCommissions,
+  toggleFavoriteInFirestore,
+  FirestoreOrder,
+  FirestoreCommission,
+} from './firebase/services';
 
 export default function App() {
+  const { user, signInWithGoogle } = useAuth();
+
   // Category & Filter State
   const [activeCategory, setActiveCategory] = useState<ProductCategory>('all');
   const [sortOption, setSortOption] = useState<'featured' | 'price-asc' | 'price-desc' | 'craft-hours'>('featured');
@@ -27,6 +39,53 @@ export default function App() {
   const [isCheckoutOpen, setIsCheckoutOpen] = useState<boolean>(false);
   const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
   const [isCommissionOpen, setIsCommissionOpen] = useState<boolean>(false);
+  const [isOrdersOpen, setIsOrdersOpen] = useState<boolean>(false);
+
+  // Firebase Real-Time State
+  const [userOrders, setUserOrders] = useState<FirestoreOrder[]>([]);
+  const [userCommissions, setUserCommissions] = useState<FirestoreCommission[]>([]);
+  const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (!user) {
+      setUserOrders([]);
+      setUserCommissions([]);
+      setFavoriteIds([]);
+      return;
+    }
+
+    const unsubOrders = subscribeUserOrders(user.uid, (orders) => {
+      setUserOrders(orders);
+    });
+
+    const unsubComms = subscribeUserCommissions(user.uid, (comms) => {
+      setUserCommissions(comms);
+    });
+
+    const unsubFavs = subscribeUserFavorites(user.uid, (favs) => {
+      setFavoriteIds(favs);
+    });
+
+    return () => {
+      unsubOrders();
+      unsubComms();
+      unsubFavs();
+    };
+  }, [user]);
+
+  const handleToggleFavorite = async (product: Product) => {
+    if (!user) {
+      try {
+        await signInWithGoogle();
+      } catch (e) {
+        console.error('Sign in error during favorite toggle:', e);
+      }
+      return;
+    }
+
+    const isCurrentlyFav = favoriteIds.includes(product.id);
+    await toggleFavoriteInFirestore(user.uid, product, isCurrentlyFav);
+  };
 
   // Cart State (Initialized with 1 warm heirloom item for immediate interaction)
   const [cartItems, setCartItems] = useState<CartItem[]>([
@@ -149,6 +208,8 @@ export default function App() {
         cartCount={totalCartCount}
         onOpenCart={() => setIsCartOpen(true)}
         onOpenSearch={() => setIsSearchOpen(true)}
+        onOpenOrders={() => setIsOrdersOpen(true)}
+        orderCount={userOrders.length}
       />
 
       {/* Hero Section with exact handwritten text & 35mm golden hour bicycle photograph */}
@@ -250,6 +311,8 @@ export default function App() {
                 handleAddToCart(p, color);
                 setIsCartOpen(true);
               }}
+              isFavorite={favoriteIds.includes(product.id)}
+              onToggleFavorite={handleToggleFavorite}
             />
           ))}
         </div>
@@ -327,6 +390,18 @@ export default function App() {
       <CustomCommissionModal
         isOpen={isCommissionOpen}
         onClose={() => setIsCommissionOpen(false)}
+      />
+
+      {/* User Orders & Studio Modal */}
+      <UserOrdersModal
+        isOpen={isOrdersOpen}
+        onClose={() => setIsOrdersOpen(false)}
+        orders={userOrders}
+        commissions={userCommissions}
+        onOpenCommission={() => {
+          setIsOrdersOpen(false);
+          setIsCommissionOpen(true);
+        }}
       />
     </FramedMockupContainer>
   );

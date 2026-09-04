@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Sparkles, Clock, CheckCircle2, Scissors } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { createCommissionInFirestore, FirestoreCommission } from '../firebase/services';
 
 interface CustomCommissionModalProps {
   isOpen: boolean;
@@ -10,12 +12,20 @@ export const CustomCommissionModal: React.FC<CustomCommissionModalProps> = ({
   isOpen,
   onClose,
 }) => {
+  const { user } = useAuth();
   const [itemType, setItemType] = useState('Bespoke Granny Square Cardigan');
   const [yarnType, setYarnType] = useState('100% Organic Pima Cotton');
   const [palette, setPalette] = useState('Retro Sunset (Terracotta, Ochre, Cream)');
   const [notes, setNotes] = useState('');
   const [email, setEmail] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    if (user && user.email && !email) {
+      setEmail(user.email);
+    }
+  }, [user]);
 
   if (!isOpen) return null;
 
@@ -30,8 +40,34 @@ export const CustomCommissionModal: React.FC<CustomCommissionModalProps> = ({
 
   const currentEst = estimates[itemType] || { hours: 20, price: 150 };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSaving(true);
+
+    if (user) {
+      const commissionId = `COMM-${Math.floor(1000 + Math.random() * 9000)}`;
+      const payload: FirestoreCommission = {
+        commissionId,
+        userId: user.uid,
+        itemType,
+        yarnType,
+        palette,
+        notes,
+        contactEmail: email || user.email || 'customer@example.com',
+        estimatedHours: currentEst.hours,
+        estimatedPrice: currentEst.price,
+        status: 'inquiry_received',
+        createdAt: new Date().toISOString(),
+      };
+
+      try {
+        await createCommissionInFirestore(user.uid, payload);
+      } catch (err) {
+        console.error('Failed to save commission:', err);
+      }
+    }
+
+    setIsSaving(false);
     setIsSubmitted(true);
   };
 
@@ -184,6 +220,13 @@ export const CustomCommissionModal: React.FC<CustomCommissionModalProps> = ({
             <h3 className="text-xl font-bold text-stone-900">
               Commission Proposal Received!
             </h3>
+
+            {user ? (
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-[11px] font-semibold">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                <span>Saved to your Studio Commissions ({user.email})</span>
+              </div>
+            ) : null}
 
             <p className="text-xs text-stone-600 max-w-sm mx-auto leading-relaxed">
               Our head artisan lead will review your specifications for <strong>{itemType}</strong> and reply to <strong>{email}</strong> within 24 hours with yarn swatch photos and timeline.

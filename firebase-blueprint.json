@@ -1,0 +1,267 @@
+{
+  "entities": {
+    "userProfile": {
+      "title": "UserProfile",
+      "description": "Stores user account profile information",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "The unique Firebase Auth UID of the user",
+          "maxLength": 128
+        },
+        "email": {
+          "type": "string",
+          "description": "The user email address",
+          "maxLength": 256
+        },
+        "displayName": {
+          "type": "string",
+          "description": "User display name",
+          "maxLength": 128
+        },
+        "photoURL": {
+          "type": "string",
+          "description": "Avatar photo URL",
+          "maxLength": 512
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when profile was created"
+        }
+      },
+      "required": ["userId", "email"]
+    },
+    "order": {
+      "title": "Order",
+      "description": "Record of a placed artisanal crochet order",
+      "type": "object",
+      "properties": {
+        "orderId": {
+          "type": "string",
+          "description": "Unique identifier for the order",
+          "maxLength": 128
+        },
+        "userId": {
+          "type": "string",
+          "description": "UID of the user who placed the order",
+          "maxLength": 128
+        },
+        "customerName": {
+          "type": "string",
+          "description": "Recipient full name",
+          "maxLength": 128
+        },
+        "customerEmail": {
+          "type": "string",
+          "description": "Contact email",
+          "maxLength": 256
+        },
+        "shippingAddress": {
+          "type": "string",
+          "description": "Shipping address line",
+          "maxLength": 256
+        },
+        "shippingCity": {
+          "type": "string",
+          "description": "City name",
+          "maxLength": 128
+        },
+        "shippingState": {
+          "type": "string",
+          "description": "State code or province",
+          "maxLength": 64
+        },
+        "shippingZip": {
+          "type": "string",
+          "description": "Postal or zip code",
+          "maxLength": 32
+        },
+        "totalAmount": {
+          "type": "number",
+          "description": "Final total charged in USD"
+        },
+        "itemCount": {
+          "type": "number",
+          "description": "Total quantity of items in order"
+        },
+        "status": {
+          "type": "string",
+          "description": "Order fulfillment status",
+          "enum": ["pending_crafting", "in_artisan_production", "shipped", "delivered"],
+          "maxLength": 64
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Server timestamp of order placement"
+        }
+      },
+      "required": ["orderId", "userId", "customerName", "customerEmail", "totalAmount", "status", "createdAt"]
+    },
+    "favorite": {
+      "title": "Favorite",
+      "description": "A saved crochet piece in the user wishlist",
+      "type": "object",
+      "properties": {
+        "productId": {
+          "type": "string",
+          "description": "ID of the saved crochet product",
+          "maxLength": 128
+        },
+        "userId": {
+          "type": "string",
+          "description": "UID of the user who saved the item",
+          "maxLength": 128
+        },
+        "productName": {
+          "type": "string",
+          "description": "Name of the crochet piece",
+          "maxLength": 128
+        },
+        "price": {
+          "type": "number",
+          "description": "Product price in USD"
+        },
+        "primaryImage": {
+          "type": "string",
+          "description": "URL of the primary product photograph",
+          "maxLength": 512
+        },
+        "savedAt": {
+          "type": "string",
+          "description": "Server timestamp when saved"
+        }
+      },
+      "required": ["productId", "userId", "productName", "price", "savedAt"]
+    },
+    "commission": {
+      "title": "Commission",
+      "description": "Custom made-to-order crochet commission request",
+      "type": "object",
+      "properties": {
+        "commissionId": {
+          "type": "string",
+          "description": "Unique identifier for the commission",
+          "maxLength": 128
+        },
+        "userId": {
+          "type": "string",
+          "description": "UID of the requester",
+          "maxLength": 128
+        },
+        "itemType": {
+          "type": "string",
+          "description": "Crochet silhouette or item type",
+          "maxLength": 128
+        },
+        "yarnType": {
+          "type": "string",
+          "description": "Fiber or yarn blend selected",
+          "maxLength": 128
+        },
+        "palette": {
+          "type": "string",
+          "description": "Color palette description",
+          "maxLength": 128
+        },
+        "notes": {
+          "type": "string",
+          "description": "Custom measurements and styling requests",
+          "maxLength": 2000
+        },
+        "contactEmail": {
+          "type": "string",
+          "description": "Contact email address",
+          "maxLength": 256
+        },
+        "estimatedHours": {
+          "type": "number",
+          "description": "Estimated craft labor hours"
+        },
+        "estimatedPrice": {
+          "type": "number",
+          "description": "Estimated quote in USD"
+        },
+        "status": {
+          "type": "string",
+          "description": "Status of the custom quote",
+          "enum": ["inquiry_received", "quote_confirmed", "yarn_prepped", "hooking_in_progress", "completed"],
+          "maxLength": 64
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when inquiry was submitted"
+        }
+      },
+      "required": ["commissionId", "userId", "itemType", "yarnType", "contactEmail", "status", "createdAt"]
+    },
+    "review": {
+      "title": "Review",
+      "description": "Community review of a handcrafted piece",
+      "type": "object",
+      "properties": {
+        "reviewId": {
+          "type": "string",
+          "description": "Unique identifier for the review",
+          "maxLength": 128
+        },
+        "authorId": {
+          "type": "string",
+          "description": "UID of author if authenticated",
+          "maxLength": 128
+        },
+        "authorName": {
+          "type": "string",
+          "description": "Author display name and location",
+          "maxLength": 128
+        },
+        "productId": {
+          "type": "string",
+          "description": "Associated product ID",
+          "maxLength": 128
+        },
+        "rating": {
+          "type": "number",
+          "description": "Star rating from 1 to 5"
+        },
+        "comment": {
+          "type": "string",
+          "description": "Review text",
+          "maxLength": 1000
+        },
+        "verified": {
+          "type": "string",
+          "description": "Whether the purchase was verified",
+          "maxLength": 16
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Server timestamp of review"
+        }
+      },
+      "required": ["reviewId", "authorName", "rating", "comment", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "userProfile",
+      "description": "Private profile document for each user"
+    },
+    "/users/{userId}/orders/{orderId}": {
+      "schema": "order",
+      "description": "User order records"
+    },
+    "/users/{userId}/favorites/{favoriteId}": {
+      "schema": "favorite",
+      "description": "User saved favorite pieces"
+    },
+    "/users/{userId}/commissions/{commissionId}": {
+      "schema": "commission",
+      "description": "User custom made-to-order commission requests"
+    },
+    "/reviews/{reviewId}": {
+      "schema": "review",
+      "description": "Community reviews for store products"
+    }
+  }
+}
