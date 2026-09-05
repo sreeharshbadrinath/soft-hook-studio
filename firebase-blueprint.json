@@ -25,6 +25,16 @@
           "description": "Avatar photo URL",
           "maxLength": 512
         },
+        "provider": {
+          "type": "string",
+          "description": "Authentication provider (google or instagram)",
+          "maxLength": 32
+        },
+        "instagramHandle": {
+          "type": "string",
+          "description": "Instagram username handle if connected",
+          "maxLength": 64
+        },
         "createdAt": {
           "type": "string",
           "description": "Timestamp when profile was created"

@@ -1,6 +1,7 @@
 import React from 'react';
 import { X, Package, Clock, Sparkles, CheckCircle2, ShoppingBag, ExternalLink } from 'lucide-react';
 import { FirestoreOrder, FirestoreCommission } from '../firebase/services';
+import { useAuth } from '../context/AuthContext';
 
 interface UserOrdersModalProps {
   isOpen: boolean;
@@ -17,6 +18,7 @@ export const UserOrdersModal: React.FC<UserOrdersModalProps> = ({
   commissions,
   onOpenCommission,
 }) => {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = React.useState<'orders' | 'commissions'>('orders');
 
   if (!isOpen) return null;
@@ -40,8 +42,24 @@ export const UserOrdersModal: React.FC<UserOrdersModalProps> = ({
               <span className="text-[11px] font-semibold text-amber-900 uppercase tracking-wider">
                 Firebase Cloud Sync
               </span>
+              {user && (
+                <span
+                  className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                    user.provider === 'instagram'
+                      ? 'bg-pink-100 text-pink-800 border border-pink-200'
+                      : 'bg-blue-100 text-blue-800 border border-blue-200'
+                  }`}
+                >
+                  {user.provider === 'instagram' ? 'Instagram' : 'Google'}
+                </span>
+              )}
             </div>
             <h3 className="text-xl font-bold text-stone-900 mt-0.5">My Studio Dashboard</h3>
+            {user && (
+              <p className="text-xs text-stone-500 mt-0.5">
+                Logged in as <span className="font-semibold text-stone-700">{user.displayName}</span> ({user.instagramHandle || user.email})
+              </p>
+            )}
           </div>
 
           <button

@@ -38,7 +38,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   return (
     <div
       id={`product-card-${product.id}`}
-      className="group flex flex-col bg-white rounded-2xl overflow-hidden border border-stone-200/70 hover:border-stone-300 hover:shadow-lg transition-all duration-300"
+      className="group flex flex-col bg-white rounded-2xl overflow-hidden border border-stone-200/70 hover:border-stone-300 hover:scale-[1.02] hover:shadow-xl transition-all duration-300 ease-out h-full"
     >
       {/* Product Image Container */}
       <div

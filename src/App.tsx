@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
+import { motion } from 'motion/react';
 import { FramedMockupContainer } from './components/FramedMockupContainer';
 import { Header } from './components/Header';
 import { HeroSection } from './components/HeroSection';
@@ -9,6 +10,8 @@ import { CheckoutModal } from './components/CheckoutModal';
 import { SearchModal } from './components/SearchModal';
 import { CustomCommissionModal } from './components/CustomCommissionModal';
 import { UserOrdersModal } from './components/UserOrdersModal';
+import { AuthModal } from './components/AuthModal';
+import { LoginView } from './components/LoginView';
 import { ArtisanStorySection } from './components/ArtisanStorySection';
 import { LookbookSection } from './components/LookbookSection';
 import { ReviewsSection } from './components/ReviewsSection';
@@ -27,7 +30,7 @@ import {
 } from './firebase/services';
 
 export default function App() {
-  const { user, signInWithGoogle } = useAuth();
+  const { user, loading, isGuestMode, openAuthModal } = useAuth();
 
   // Category & Filter State
   const [activeCategory, setActiveCategory] = useState<ProductCategory>('all');
@@ -75,11 +78,7 @@ export default function App() {
 
   const handleToggleFavorite = async (product: Product) => {
     if (!user) {
-      try {
-        await signInWithGoogle();
-      } catch (e) {
-        console.error('Sign in error during favorite toggle:', e);
-      }
+      openAuthModal('Sign in with Google or Instagram to save pieces to your wishlist');
       return;
     }
 
@@ -188,6 +187,29 @@ export default function App() {
   const discountAmount = (subtotal * discountPercent) / 100;
   const shipping = subtotal >= 85 || subtotal === 0 ? 0 : 9.5;
   const finalTotal = Math.max(0, subtotal - discountAmount + shipping);
+
+  // Initial Auth Loading Screen
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#0e1117] flex flex-col items-center justify-center p-4">
+        <div className="w-12 h-12 bg-[#FEE047] rounded-full flex items-center justify-center shadow-lg animate-pulse mb-3">
+          <svg className="w-6 h-6 text-[#1A1A1A]" viewBox="0 0 32 32" fill="currentColor">
+            <path d="M10 8h12l-1.5 3H11.5L10 8z" />
+            <path d="M7 13h18l-1.8 3.5H8.8L7 13z" />
+            <path d="M9 18.5h14l-1.6 3.5H10.6L9 18.5z" />
+          </svg>
+        </div>
+        <p className="text-xs text-stone-400 font-medium tracking-wider">
+          Loading Soft Hook Studio...
+        </p>
+      </div>
+    );
+  }
+
+  // When unauthenticated user enters the website, show Login / Sign Up Page directly in full screen
+  if (!user && !isGuestMode) {
+    return <LoginView fullScreen={true} showCloseButton={false} />;
+  }
 
   return (
     <FramedMockupContainer>
@@ -300,22 +322,51 @@ export default function App() {
           </span>
         </div>
 
-        {/* Product Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+        {/* Product Cards Grid with Subtle Fade-In & Slide-Up Entrance Animation */}
+        <motion.div
+          key={`${activeCategory}-${sortOption}`}
+          initial="hidden"
+          animate="visible"
+          variants={{
+            hidden: { opacity: 0 },
+            visible: {
+              opacity: 1,
+              transition: {
+                staggerChildren: 0.045,
+              },
+            },
+          }}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8"
+        >
           {displayedProducts.map((product) => (
-            <ProductCard
+            <motion.div
               key={product.id}
-              product={product}
-              onQuickView={(p) => setQuickViewProduct(p)}
-              onAddToCart={(p, color) => {
-                handleAddToCart(p, color);
-                setIsCartOpen(true);
+              variants={{
+                hidden: { opacity: 0, y: 16 },
+                visible: {
+                  opacity: 1,
+                  y: 0,
+                  transition: {
+                    duration: 0.35,
+                    ease: [0.22, 1, 0.36, 1],
+                  },
+                },
               }}
-              isFavorite={favoriteIds.includes(product.id)}
-              onToggleFavorite={handleToggleFavorite}
-            />
+              className="h-full flex flex-col"
+            >
+              <ProductCard
+                product={product}
+                onQuickView={(p) => setQuickViewProduct(p)}
+                onAddToCart={(p, color) => {
+                  handleAddToCart(p, color);
+                  setIsCartOpen(true);
+                }}
+                isFavorite={favoriteIds.includes(product.id)}
+                onToggleFavorite={handleToggleFavorite}
+              />
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </main>
 
       {/* Editorial Lookbook Section */}
@@ -403,6 +454,9 @@ export default function App() {
           setIsCommissionOpen(true);
         }}
       />
+
+      {/* Authentication Modal (Google & Instagram) */}
+      <AuthModal />
     </FramedMockupContainer>
   );
 }

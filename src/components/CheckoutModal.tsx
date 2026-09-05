@@ -19,7 +19,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
   total,
   onCompleteOrder,
 }) => {
-  const { user, signInWithGoogle } = useAuth();
+  const { user, openAuthModal } = useAuth();
   const [step, setStep] = useState<'form' | 'success'>('form');
   const [confirmedOrderId, setConfirmedOrderId] = useState<string>('');
   const [formData, setFormData] = useState({
@@ -128,6 +128,38 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                 ${total.toFixed(2)}
               </span>
             </div>
+
+            {/* Studio Account Status */}
+            {user ? (
+              <div className="mb-4 p-3 rounded-xl bg-emerald-50 border border-emerald-200/70 text-xs text-emerald-900 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <div>
+                    <span className="font-semibold">Linked to Studio Profile:</span>
+                    <span className="ml-1 text-emerald-700 font-medium">
+                      {user.displayName} ({user.provider === 'instagram' ? 'Instagram' : 'Google'})
+                    </span>
+                  </div>
+                </div>
+                <span className="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold">
+                  Cloud Sync
+                </span>
+              </div>
+            ) : (
+              <div className="mb-4 p-3 rounded-xl bg-amber-50 border border-amber-200/80 text-xs text-amber-900 flex items-center justify-between">
+                <div>
+                  <span className="font-semibold">Want to track this order in real-time?</span>
+                  <p className="text-[11px] text-amber-700">Sign in with Google or Instagram to save this order receipt.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => openAuthModal('Sign in with Google or Instagram to link your order to your Studio Account')}
+                  className="px-2.5 py-1 rounded-lg bg-stone-900 text-white text-[11px] font-semibold hover:bg-stone-800 transition-colors cursor-pointer shrink-0 ml-2"
+                >
+                  Sign In
+                </button>
+              </div>
+            )}
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
