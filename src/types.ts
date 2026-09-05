@@ -1,12 +1,9 @@
 export type ProductCategory = 
   | 'all'
-  | 'hers'
-  | 'his'
+  | 'clothing'
   | 'bags'
-  | 'wearables'
-  | 'home'
-  | 'accessories'
-  | 'last-call';
+  | 'purses'
+  | 'toys';
 
 export interface ProductColor {
   name: string;

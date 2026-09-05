@@ -18,12 +18,12 @@ export const SearchModal: React.FC<SearchModalProps> = ({
   const [query, setQuery] = useState<string>('');
 
   const popularSearches = [
-    'Granny Square Cardigan',
-    'Waffle Tote',
-    'Bucket Hat',
-    'Heirloom Throw',
-    'Last Call',
-    'Merino Beanie',
+    'Halter Top',
+    'Smiley Tote Bag',
+    'Kiss-Lock Coin Purse',
+    'Honey Bear Toy',
+    'Weaved Trousers',
+    'Amigurumi Bunny',
   ];
 
   const results = useMemo(() => {

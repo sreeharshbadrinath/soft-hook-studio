@@ -37,8 +37,8 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({ onClick, className = '', s
       </div>
 
       {/* Brand Wordmark */}
-      <span className={`font-semibold uppercase text-stone-800 font-sans transition-colors group-hover:text-stone-950 ${textSizes[size]}`}>
-        Soft Hook Studio
+      <span className="font-display text-base sm:text-lg tracking-wider text-stone-900 group-hover:text-stone-950 transition-colors">
+        SOFT HOOK
       </span>
     </div>
   );

@@ -38,41 +38,51 @@ export const Header: React.FC<HeaderProps> = ({
       }`}
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between">
-        {/* Left Nav: His, Hers, Last Call matching the reference image */}
-        <nav className="flex items-center gap-6 md:gap-8 flex-1">
+        {/* Left Nav: Weaved Clothing, Bags, Purses, Toys */}
+        <nav className="flex items-center gap-4 sm:gap-6 md:gap-8 flex-1">
           <button
-            id="nav-his-btn"
-            onClick={() => onSelectCategory(activeCategory === 'his' ? 'all' : 'his')}
+            id="nav-clothing-btn"
+            onClick={() => onSelectCategory('clothing')}
             className={`text-xs md:text-sm font-medium transition-colors hover:text-stone-900 cursor-pointer ${
-              activeCategory === 'his'
-                ? 'text-stone-950 font-semibold underline underline-offset-4 decoration-[#CE4326]'
+              activeCategory === 'clothing'
+                ? 'text-stone-950 font-bold underline underline-offset-4 decoration-[#708A74]'
                 : 'text-stone-600'
             }`}
           >
-            His
+            Weaved Clothing
           </button>
           <button
-            id="nav-hers-btn"
-            onClick={() => onSelectCategory(activeCategory === 'hers' ? 'all' : 'hers')}
+            id="nav-bags-btn"
+            onClick={() => onSelectCategory('bags')}
             className={`text-xs md:text-sm font-medium transition-colors hover:text-stone-900 cursor-pointer ${
-              activeCategory === 'hers'
-                ? 'text-stone-950 font-semibold underline underline-offset-4 decoration-[#CE4326]'
+              activeCategory === 'bags'
+                ? 'text-stone-950 font-bold underline underline-offset-4 decoration-[#708A74]'
                 : 'text-stone-600'
             }`}
           >
-            Hers
+            Bags
           </button>
           <button
-            id="nav-lastcall-btn"
-            onClick={() => onSelectCategory(activeCategory === 'last-call' ? 'all' : 'last-call')}
-            className={`text-xs md:text-sm font-medium transition-colors hover:text-stone-900 cursor-pointer flex items-center gap-1.5 ${
-              activeCategory === 'last-call'
-                ? 'text-amber-800 font-semibold underline underline-offset-4 decoration-amber-600'
+            id="nav-purses-btn"
+            onClick={() => onSelectCategory('purses')}
+            className={`text-xs md:text-sm font-medium transition-colors hover:text-stone-900 cursor-pointer ${
+              activeCategory === 'purses'
+                ? 'text-stone-950 font-bold underline underline-offset-4 decoration-[#708A74]'
                 : 'text-stone-600'
             }`}
           >
-            <span>Last Call</span>
-            <span className="hidden sm:inline-block w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+            Purses
+          </button>
+          <button
+            id="nav-toys-btn"
+            onClick={() => onSelectCategory('toys')}
+            className={`text-xs md:text-sm font-medium transition-colors hover:text-stone-900 cursor-pointer ${
+              activeCategory === 'toys'
+                ? 'text-stone-950 font-bold underline underline-offset-4 decoration-[#708A74]'
+                : 'text-stone-600'
+            }`}
+          >
+            Toys
           </button>
         </nav>
 

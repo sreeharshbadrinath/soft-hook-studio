@@ -23,7 +23,7 @@
         "photoURL": {
           "type": "string",
           "description": "Avatar photo URL",
-          "maxLength": 512
+          "maxLength": 1024
         },
         "provider": {
           "type": "string",
@@ -37,7 +37,13 @@
         },
         "createdAt": {
           "type": "string",
-          "description": "Timestamp when profile was created"
+          "description": "Timestamp when profile was created",
+          "maxLength": 128
+        },
+        "lastLoginAt": {
+          "type": "string",
+          "description": "Timestamp when user last logged in",
+          "maxLength": 128
         }
       },
       "required": ["userId", "email"]

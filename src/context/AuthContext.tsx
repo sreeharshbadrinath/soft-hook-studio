@@ -11,7 +11,7 @@ import {
   sendPasswordResetEmail,
   updateProfile,
 } from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase/config';
 import { handleFirestoreError, OperationType } from '../firebase/errors';
 
@@ -142,16 +142,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Sync with Firestore profile
         const userRef = doc(db, 'users', currentUser.uid);
         try {
+          const userSnap = await getDoc(userRef);
+          const existingData = userSnap.exists() ? userSnap.data() : null;
           await setDoc(
             userRef,
             {
               userId: currentUser.uid,
-              email: studioUser.email || '',
-              displayName: studioUser.displayName || 'Collector',
-              photoURL: studioUser.photoURL || '',
-              provider: studioUser.provider,
+              email: studioUser.email || existingData?.email || '',
+              displayName: studioUser.displayName || existingData?.displayName || 'Collector',
+              photoURL: studioUser.photoURL || existingData?.photoURL || '',
+              provider: studioUser.provider || existingData?.provider || 'google',
               ...(studioUser.instagramHandle ? { instagramHandle: studioUser.instagramHandle } : {}),
-              createdAt: new Date().toISOString(),
+              createdAt: existingData?.createdAt || new Date().toISOString(),
+              lastLoginAt: new Date().toISOString(),
             },
             { merge: true }
           );
@@ -250,6 +253,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     try {
       const userRef = doc(db, 'users', studioUser.uid);
+      const userSnap = await getDoc(userRef);
+      const existingData = userSnap.exists() ? userSnap.data() : null;
       await setDoc(
         userRef,
         {
@@ -259,7 +264,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           photoURL: studioUser.photoURL,
           provider: 'instagram',
           instagramHandle: cleanHandle,
-          createdAt: new Date().toISOString(),
+          createdAt: existingData?.createdAt || new Date().toISOString(),
+          lastLoginAt: new Date().toISOString(),
         },
         { merge: true }
       );

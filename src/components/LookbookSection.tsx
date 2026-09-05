@@ -23,20 +23,20 @@ export const LookbookSection: React.FC<LookbookSectionProps> = ({
     >
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
         <div>
-          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-amber-900">
-            <Sparkles className="w-3.5 h-3.5 text-[#CE4326]" />
+          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#708A74]">
+            <Sparkles className="w-3.5 h-3.5 text-[#708A74]" />
             <span>Seasonal Lookbook • Vol. IV</span>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-bold text-stone-900 mt-1">
-            Nowhere to go, nothing to do.
+          <h2 className="font-display text-3xl sm:text-4xl text-stone-900 mt-1 tracking-tight">
+            NOWHERE TO GO, NOTHING TO DO.
           </h2>
           <p className="text-xs sm:text-sm text-stone-600 mt-1">
-            Sunny balcony afternoons, cold iced matcha, and slow hand-stitched crochets.
+            Artisanal slow fashion, natural fibers, and mindful living.
           </p>
         </div>
 
-        <span className="font-handwritten text-2xl sm:text-3xl text-stone-500 transform -rotate-2">
-          Sun-dappled days in slow stitches
+        <span className="font-handwritten text-xl sm:text-2xl text-[#708A74]">
+          Everyday artisanal living
         </span>
       </div>
 

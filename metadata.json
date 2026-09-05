@@ -1,6 +1,6 @@
 {
   "name": "Soft Hook Studio",
-  "description": "Artisanal slow-fashion hand-crocheted apparel, bags, and cozy home goods spun with warmth.",
+  "description": "Artisanal slow-fashion boutique for handcrafted crochets, weaved clothing, bags, toys, and purses.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

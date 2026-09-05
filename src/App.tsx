@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { FramedMockupContainer } from './components/FramedMockupContainer';
 import { Header } from './components/Header';
 import { HeroSection } from './components/HeroSection';
+import { EditorialShowcaseSection } from './components/EditorialShowcaseSection';
 import { ProductCard } from './components/ProductCard';
 import { ProductQuickViewModal } from './components/ProductQuickViewModal';
 import { CartDrawer } from './components/CartDrawer';
@@ -89,9 +90,9 @@ export default function App() {
   // Cart State (Initialized with 1 warm heirloom item for immediate interaction)
   const [cartItems, setCartItems] = useState<CartItem[]>([
     {
-      product: PRODUCTS[1], // Solstice Coastal Waffle Tote Bag
+      product: PRODUCTS[0], // The Solstice Striped Halter Top
       quantity: 1,
-      selectedColor: PRODUCTS[1].colors[0],
+      selectedColor: PRODUCTS[0].colors[0],
     },
   ]);
   const [discountCode, setDiscountCode] = useState<string>('SOFTHOOK15');
@@ -214,13 +215,13 @@ export default function App() {
   return (
     <FramedMockupContainer>
       {/* Top Subtle Announcement Bar */}
-      <div className="bg-[#1E1B18] text-stone-200 py-1.5 px-4 text-center text-[11px] font-medium tracking-wide flex items-center justify-center gap-2 select-none">
-        <span className="w-1.5 h-1.5 rounded-full bg-[#CE4326]" />
+      <div className="bg-[#131614] text-stone-200 py-1.5 px-4 text-center text-[11px] font-medium tracking-wide flex items-center justify-center gap-2 select-none border-b border-white/5">
+        <span className="w-1.5 h-1.5 rounded-full bg-[#708A74]" />
         <span>Summer in Stitches: Free shipping on artisanal orders over $85</span>
-        <span className="hidden md:inline">• Hand-hooked with 100% organic fibers</span>
+        <span className="hidden md:inline">• Crochets, Weaved Clothing, Bags, Toys & Purses</span>
       </div>
 
-      {/* Main Header with Exact Layout from Reference Image */}
+      {/* Primary Sticky Header (Only one search & auth control on the entire page) */}
       <Header
         activeCategory={activeCategory}
         onSelectCategory={(cat) => {
@@ -234,40 +235,43 @@ export default function App() {
         orderCount={userOrders.length}
       />
 
-      {/* Hero Section with exact handwritten text & 35mm golden hour bicycle photograph */}
-      <div className="p-4 sm:p-6 md:p-8">
-        <HeroSection
-          onExploreClick={scrollToCatalog}
-          onOpenLookbook={() => {
-            const el = document.getElementById('lookbook-section');
-            el?.scrollIntoView({ behavior: 'smooth' });
-          }}
-        />
-      </div>
+      {/* Hero Section with Signature Sage Green, Giant Condensed SOFT HOOK & Handcrafted Model */}
+      <HeroSection
+        onSelectCategory={(cat) => {
+          setActiveCategory(cat);
+          scrollToCatalog();
+        }}
+      />
+
+      {/* Editorial Visual Showcase Blocks (Clothing, Bags, Purses & Toys) */}
+      <EditorialShowcaseSection
+        onSelectCategory={(cat) => {
+          setActiveCategory(cat);
+          scrollToCatalog();
+        }}
+        onScrollToCatalog={scrollToCatalog}
+      />
 
       {/* Catalog & Shop Section */}
-      <main ref={catalogRef} id="catalog-section" className="py-8 sm:py-12 px-6 sm:px-10 max-w-7xl mx-auto">
+      <main ref={catalogRef} id="catalog-section" className="py-12 sm:py-16 px-4 sm:px-8 max-w-7xl mx-auto">
         {/* Category Pill Filters & Controls */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-stone-200">
-          {/* Category Chips */}
+          {/* Category Chips: Weaved Clothing, Bags, Purses, Toys */}
           <div className="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0 scrollbar-none">
             {[
-              { id: 'all', label: 'All Crochets' },
-              { id: 'hers', label: 'Hers' },
-              { id: 'his', label: 'His' },
-              { id: 'wearables', label: 'Tops & Cardigans' },
-              { id: 'bags', label: 'Totes & Bags' },
-              { id: 'home', label: 'Throws & Cushions' },
-              { id: 'accessories', label: 'Accessories' },
-              { id: 'last-call', label: 'Last Call (Archive)' },
+              { id: 'all', label: 'All Pieces' },
+              { id: 'clothing', label: 'Weaved Clothing' },
+              { id: 'bags', label: 'Crochet Bags' },
+              { id: 'purses', label: 'Handmade Purses' },
+              { id: 'toys', label: 'Amigurumi Toys' },
             ].map((cat) => (
               <button
                 key={cat.id}
                 onClick={() => setActiveCategory(cat.id as ProductCategory)}
-                className={`px-3.5 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all cursor-pointer ${
+                className={`px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
                   activeCategory === cat.id
                     ? 'bg-stone-900 text-white shadow-xs'
-                    : 'bg-stone-200/60 hover:bg-stone-200 text-stone-700'
+                    : 'bg-stone-200/70 hover:bg-stone-200 text-stone-700'
                 }`}
               >
                 {cat.label}
@@ -277,7 +281,7 @@ export default function App() {
 
           {/* Sort & Bespoke Commission Trigger */}
           <div className="flex items-center gap-3 self-end md:self-auto">
-            <div className="flex items-center gap-1.5 text-xs text-stone-600 bg-white px-3 py-1.5 rounded-xl border border-stone-200 shadow-2xs">
+            <div className="flex items-center gap-1.5 text-xs text-stone-600 bg-white px-3.5 py-2 rounded-full border border-stone-200 shadow-2xs">
               <SlidersHorizontal className="w-3.5 h-3.5 text-stone-400" />
               <span className="font-medium text-stone-500">Sort:</span>
               <select
@@ -294,31 +298,37 @@ export default function App() {
 
             <button
               onClick={() => setIsCommissionOpen(true)}
-              className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#F4ECE1] hover:bg-[#EBDFD0] text-[#91381E] text-xs font-semibold border border-[#DECEBC] transition-colors cursor-pointer"
+              className="hidden lg:flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#EAE3D9] hover:bg-[#DDD3C5] text-stone-900 text-xs font-semibold border border-stone-300 transition-colors cursor-pointer"
             >
-              <Scissors className="w-3.5 h-3.5 text-[#CE4326]" />
+              <Scissors className="w-3.5 h-3.5 text-[#708A74]" />
               <span>Custom Commission</span>
             </button>
           </div>
         </div>
 
         {/* Section Heading with Count */}
-        <div className="flex items-baseline justify-between pt-6 pb-6">
+        <div className="flex items-baseline justify-between pt-8 pb-8">
           <div>
-            <h2 className="text-xl sm:text-2xl font-bold text-stone-900 capitalize">
+            <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl text-stone-900 tracking-tight">
               {activeCategory === 'all'
-                ? 'The Handcrafted Collection'
-                : activeCategory === 'last-call'
-                ? 'Last Call Archive'
+                ? 'THE CROCHET & WEAVED COLLECTION'
+                : activeCategory === 'clothing'
+                ? 'WEAVED CLOTHINGS & CROCHET'
+                : activeCategory === 'bags'
+                ? 'HANDCRAFTED CROCHET BAGS'
+                : activeCategory === 'purses'
+                ? 'ARTISANAL CROCHET PURSES'
+                : activeCategory === 'toys'
+                ? 'AMIGURUMI CROCHET TOYS'
                 : `${activeCategory} Crochets`}
             </h2>
-            <p className="text-xs text-stone-500 mt-0.5">
+            <p className="text-xs text-stone-500 mt-1">
               Showing {displayedProducts.length} human-hooked slow fashion creations
             </p>
           </div>
 
-          <span className="font-handwritten text-xl text-stone-400 hidden sm:inline">
-            100% hand-hooked
+          <span className="text-xs font-semibold uppercase tracking-widest text-[#708A74] hidden sm:inline">
+            100% slow fashion
           </span>
         </div>
 
